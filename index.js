@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 require("dotenv").config()
 const port = process.env.PORT || 5000;
 const MongoClient = require('mongodb').MongoClient;
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require('mongodb').ObjectID;
 
 
 const app = express();
@@ -18,26 +18,6 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   console.log('connection error', err);
   const collection = client.db("freshValley").collection("products");
-
-  // checkOutPost data to Database
-  const oderCollection = client.db("freshValley").collection("orders");
-  app.post("/checkOutData", (req, res) => {
-    const checkOut = req.body;
-    oderCollection.insertOne(checkOut)
-      .then((result) => {
-        res.send(result.insertedCount > 0);
-      })
-  })
-
-  // CheckOut get data from Database
-  app.get("/checkOutUserGet", (req, res) => {
-    // console.log('specific user',req.query.email);
-    oderCollection.find({email: req.query.email})
-      .toArray((error, doc) => {
-        res.send(doc);
-        console.log('get data error',error);
-      })
-  })
 
   // post data to Database from clint page or site
   app.post('/addData', (req, res) => {
@@ -56,7 +36,6 @@ client.connect(err => {
       })
   })
 
-
   // get single data from database to clint site start
   app.get('/singleProduct/:id', (req, res) => {
     const id = req.params.id;
@@ -64,12 +43,33 @@ client.connect(err => {
       .toArray((error, result) => {
         res.send(result[0]);
       })
-
   })
 
+  // checkOutPost data to Database
+  const oderCollection = client.db("freshValley").collection("orders");
+  app.post("/checkOutData", (req, res) => {
+    const checkOut = req.body;
+    oderCollection.insertOne(checkOut)
+      .then((result) => {
+        res.send(result.insertedCount > 0);
+      })
+  })
+
+  // CheckOut get data from Database
+  app.get("/checkOutUserGet", (req, res) => {
+    // console.log('specific user',req.query.email);
+    oderCollection.find({email: req.query.email})
+      .toArray((error, doc) => {
+        res.send(doc);
+      })
+  })
+  
   // Delete Item
-  app.get('/delete/:id', (req, res) => {
-    console.log(req.params.id);
+  app.delete('/delete/:id', (req, res) => {
+    collection.deleteOne({_id: ObjectId(req.params.id)})
+    .then(result => {
+      res.send(result.deletedCount > 0 )
+    })
   })
 
 });
