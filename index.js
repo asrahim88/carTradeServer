@@ -18,20 +18,25 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   console.log('connection error', err);
   const collection = client.db("freshValley").collection("products");
-   
-  // checkOutPost
+
+  // checkOutPost data to Database
+  const oderCollection = client.db("freshValley").collection("orders");
   app.post("/checkOutData", (req, res) => {
     const checkOut = req.body;
-    collection.insertOne(checkOut)
-    .then((result) => {
-      res.send(result.insertedCount > 0);
-      console.log(result );
-    })
+    oderCollection.insertOne(checkOut)
+      .then((result) => {
+        res.send(result.insertedCount > 0);
+      })
   })
 
-  // CheckOut get
-  app.get("/checkOutUser", (req, res) => {
-    
+  // CheckOut get data from Database
+  app.get("/checkOutUserGet", (req, res) => {
+    // console.log('specific user',req.query.email);
+    oderCollection.find({email: req.query.email})
+      .toArray((error, doc) => {
+        res.send(doc);
+        console.log('get data error',error);
+      })
   })
 
   // post data to Database from clint page or site
@@ -39,7 +44,6 @@ client.connect(err => {
     const newData = req.body;
     collection.insertOne(newData)
       .then(result => {
-        console.log('inserted Count', result.insertedCount);
         res.send(result.insertedCount > 0);
       })
   })
@@ -61,6 +65,11 @@ client.connect(err => {
         res.send(result[0]);
       })
 
+  })
+
+  // Delete Item
+  app.get('/delete/:id', (req, res) => {
+    console.log(req.params.id);
   })
 
 });
